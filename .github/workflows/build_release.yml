@@ -19,7 +19,7 @@ jobs:
       - name: Get Latest MariaDB
         run: go run ./cmd/mdownload
       - name: Pack release
-        run: Compress-Archive -Path certlist.exe,mariadb-latest.db -DestinationPath certlist_windows.zip
+        run: Compress-Archive -Path certlist.exe,mariadb-latest.zip -DestinationPath certlist_windows.zip
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')

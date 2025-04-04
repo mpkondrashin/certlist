@@ -21,6 +21,8 @@ Resulting CSV file has following columns:
 -	ManagmentIP - Tipping Point IPS management IP address         
 -	Tos - Tipping Point IPS TOS version                
 
+**Note:** if same certificate used in mode than one Server SSL Profile/IPS, then they all will be listed in CSV file separated by comma.
+
 ## How to use:
 1. Create API Key
 2. Write config file
@@ -104,3 +106,5 @@ Bidirectional connectivity must be provided from host running CertList to SMS an
 ### IPv6
 If using IPv6 address for SMS, please put it in square brackets.
 
+### Client SSL Certificates
+The script does not provide any info on usage of the Client SSL Inspection certificates, though the certificates themselves will be listed.

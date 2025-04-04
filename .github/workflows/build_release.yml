@@ -15,7 +15,7 @@ jobs:
       - name: Check Go version
         run: go version
       - name: Build Windows
-        run: GOOS=windows GOARCH=amd64 go build ./cmd/certlist
+        run: build ./cmd/certlist
       - name: Get Latest MariaDB
         run: go run ./cmd/mdownload
       - name: Pack release

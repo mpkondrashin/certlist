@@ -50,7 +50,7 @@ Run following command:
 certlist.exe --output report.csv
 ```
 
-## Options
+## Configuration
 
 CertList provides following ways to provide options:
 1. Configuration file config.yaml. Application seeks for this file in its current folder or folder of CertList executable

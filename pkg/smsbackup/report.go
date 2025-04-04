@@ -30,10 +30,7 @@ import (
 
 type ReportLine struct {
 	CertName           string
-	IpsName            string
-	ManagmentIP        string
-	Tos                string
-	Port               string
+	SubjectName        string
 	IssuerName         string
 	ExpirationDate     string
 	EffectiveDate      string
@@ -41,9 +38,11 @@ type ReportLine struct {
 	SerialNumber       string
 	Thumbprint         string
 	SignatureAlgorithm string
-	SubjectName        string
 	Version            string
 	SSLServerProxies   string
+	IpsName            string
+	ManagmentIP        string
+	Tos                string
 }
 
 func GenerateReport(db *sql.DB) (report []ReportLine, err error) {

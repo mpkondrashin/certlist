@@ -3,7 +3,7 @@
 
 **CertList generates CSV file with all server TLS inspection certificates with info on which IPS boxes they are used**
 
-## 
+## Report Format
 
 Resulting CSV file has following columns:
 -	CertName - certificate name as it was provided in SMS console           
@@ -57,7 +57,7 @@ CertList provides following ways to provide options:
 2. Environment variables
 3. Command line parameters
 
-Full config file explained:
+Full config.yaml file explained:
 ```yaml
 temp: # use this folder for temporary files instead of %TEMP%
 output: # output filename

@@ -256,6 +256,7 @@ func main() {
 		if err != nil {
 			log.Print(err)
 		}
+		time.Sleep(2 * time.Second)
 	}()
 	time.Sleep(2 * time.Second)
 	log.Print("Extract dump")

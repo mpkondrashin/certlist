@@ -56,7 +56,7 @@ debug:
   nocleanup: # Do not remove temporary files
 ```
 
-To set these parameters through commandl ine, use following notation: <section>.<parameter>. For example to ignore TLS errors use following command line option:
+To set these parameters through command line, use following notation: <section>.<parameter>. For example to ignore TLS errors use following command line option:
 ```commandline 
 certalert --sms.ignore_tls_errors
 ```

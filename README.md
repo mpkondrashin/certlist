@@ -47,7 +47,7 @@ Download certlist executable  [releases](https://github.com/mpkondrashin/certlis
 
 Run following command:
 ```commandline
-certlist.exe
+certlist.exe --output report.csv
 ```
 
 ## Options

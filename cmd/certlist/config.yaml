@@ -1,0 +1,6 @@
+sms:
+  address: <sms address>
+  api_key: <sms API key>
+  ignore_tls_errors: true
+
+output: <output filename>

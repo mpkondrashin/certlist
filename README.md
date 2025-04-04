@@ -39,11 +39,6 @@ CertList provides following ways to provide options:
 2. Environment variables
 3. Command line parameters
 
-
-	flagMariaDB   = "debug.mariadb"
-	flagBackup    = "debug.backup"
-	flagNoCleanup = "debug.nocleanup"
-
 Full config file explained:
 ```yaml
 temp: # use this folder for temporary files instead of %TEMP%

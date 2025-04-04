@@ -6,20 +6,20 @@
 ## Report Format
 
 Resulting CSV file has following columns:
--	CertName - certificate name as it was provided in SMS console           
--	SubjectName - certificate X.500 subject        
--	IssuerName - certificate X.500 issuer         
--	ExpirationDate - date after which the certificate is no longer valid     
--	EffectiveDate - date before which the certificate is not yet valid      
--	KeySize0 - size of the key (1024, 2048, ...)           
+-	CertName - certificate name as it was provided in SMS console
+-	SubjectName - certificate X.500 subject
+-	IssuerName - certificate X.500 issuer
+-	ExpirationDate - date after which the certificate is no longer valid
+-	EffectiveDate - date before which the certificate is not yet valid    
+-	KeySize0 - size of the key (1024, 2048, ...)
 -	SerialNumber - serial number of the certificate 
--	Thumbprint - certificate thumbprint         
--	SignatureAlgorithm - used cryptographic algorithm 
--	Version - used certificate version (usually 3)            
+-	Thumbprint - certificate thumbprint
+-	SignatureAlgorithm - used cryptographic algorithm (for example SHA-256)
+-	Version - used certificate version 
 -	SSLServerProxies - name of the SSL server proxies names configured in SMS and using this certificate   
 -	IpsName - name of Tipping Point IPS using this certificate
--	ManagmentIP - Tipping Point IPS management IP address         
--	Tos - Tipping Point IPS TOS version                
+-	ManagmentIP - Tipping Point IPS management IP address
+-	Tos - Tipping Point IPS TOS version
 
 **Note:** if same certificate used in mode than one Server SSL Profile/IPS, then they all will be listed in CSV file separated by comma.
 

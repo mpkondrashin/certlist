@@ -107,7 +107,11 @@ func (db *DB) Start() error {
 }
 
 func (db *DB) Stop() error {
-	return db.cmd.Process.Kill()
+	err := db.cmd.Process.Kill()
+	if err != nil {
+		return err
+	}
+	return db.cmd.Wait()
 }
 
 /*

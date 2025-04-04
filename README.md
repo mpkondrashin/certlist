@@ -68,12 +68,12 @@ CERTALERT_SMS_API_KEY=A95BE8AB-AE11-45C5-B813-A9A2FDC27E5B
 
 ## System Requirements
 
-OS: Windows
-CPU: x86_64
-HDD: 2GB of free space
-Network:
-- Opened port 443 to the direction of the SMS
-- Opened port 22 to the direction of the CertList
+- OS: Windows
+- CPU: x86_64
+- HDD: 2GB of free space
+- Network:
+  - Opened port 443 to the direction of the SMS
+  - Opened port 22 to the direction of the CertList
 
 ## Known Issues
 

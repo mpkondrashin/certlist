@@ -199,6 +199,7 @@ func LogSize(backupPath string) {
 }
 
 func main() {
+	log.Println("CertList Started")
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println(r)

@@ -151,6 +151,8 @@ func GetSSLServer(db *sql.DB, certID int, line *ReportLine) error {
 			line.SSLServerProxies += sslServer.Name + ","
 		}
 	}
-	line.SSLServerProxies = line.SSLServerProxies[:len(line.SSLServerProxies)-1] // remove last comma
+	if len(line.SSLServerProxies) > 0 {
+		line.SSLServerProxies = line.SSLServerProxies[:len(line.SSLServerProxies)-1] // remove last comma
+	}
 	return nil
 }

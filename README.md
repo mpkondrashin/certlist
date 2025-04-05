@@ -34,6 +34,12 @@ Resulting CSV file has following columns:
 3. Create new user and add it to the superuser group
 4. Save API Key
 
+## Minimal permissions
+
+Role Capabilities:
+- Admin -> Admin Section -> SMS Management -> Access Management -> Access SMS Web Services
+- Admin -> Administer the SMS -> Database Management -> Manage Database -> Backup Database
+
 ### Write config file
 Create following minimal configuration file:
 ```yaml

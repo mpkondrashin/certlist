@@ -84,9 +84,14 @@ func (db *DB) Extract() error {
 
 func (db *DB) Init() error {
 	c := exec.Command(db.mariadbInstallDbExe, "--datadir="+db.DataFolder())
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-	return c.Run()
+	var sb strings.Builder
+	c.Stdout = &sb
+	c.Stderr = &sb
+	err := c.Run()
+	if err != nil {
+		return fmt.Errorf("failed to init MariaDB: %w\n%s %s\n%s", err, db.mariadbInstallDbExe, "--datadir="+db.DataFolder(), sb.String())
+	}
+	return nil
 }
 
 func (db *DB) Start() error {
@@ -98,12 +103,18 @@ func (db *DB) Start() error {
 		"--pid-file=" + filepath.Join(db.tempFolder, "mariadb.pid"),
 		"--skip-grant-tables",
 		"--console",
+		"--silent-startup",
 	}
 	//log.Println(db.mariadbdExe, strings.Join(options, " "))
 	db.cmd = exec.Command(db.mariadbdExe, options...)
-	db.cmd.Stdout = os.Stdout
-	db.cmd.Stderr = os.Stderr
-	return db.cmd.Start()
+	var sb strings.Builder
+	db.cmd.Stdout = &sb
+	db.cmd.Stderr = &sb
+	err := db.cmd.Start()
+	if err != nil {
+		return fmt.Errorf("failed to start MariaDB: %w\n%s %s\n%s", err, db.mariadbdExe, strings.Join(options, " "), sb.String())
+	}
+	return nil
 }
 
 func (db *DB) Stop() error {
@@ -152,7 +163,7 @@ func (db *DB) Populate(dumpFile string) error {
 		if strings.Contains(errOutput.String(), DatabaseName+".alerts") {
 			return nil
 		}
-		return fmt.Errorf("%w: %s", ErrPopulate, errOutput.String())
+		return fmt.Errorf("%s %s\n%w: %s", db.mariadbExe, strings.Join(command, " "), ErrPopulate, errOutput.String())
 	}
 	return nil
 }

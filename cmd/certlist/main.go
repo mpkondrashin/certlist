@@ -204,7 +204,7 @@ func main() {
 		if r := recover(); r != nil {
 			log.Println(r)
 		}
-		fmt.Println("Exiting")
+		log.Println("Exiting")
 	}()
 	Configure()
 	tempDir := GetTempDir()
@@ -243,21 +243,20 @@ func main() {
 	if err := mariaDB.Extract(); err != nil {
 		Panic("extract: %v", err)
 	}
-	log.Print("Initialize Database")
+	log.Print("Initialize MariaDB")
 	if err := mariaDB.Init(); err != nil {
 		Panic("initialize: %v", err)
 	}
-	log.Print("Start Database")
+	log.Print("Start MariaDB")
 	if err := mariaDB.Start(); err != nil {
 		Panic("start: %v", err)
 	}
 	defer func() {
-		log.Print("Stop database")
+		log.Print("Stop MariaDB")
 		err := mariaDB.Stop()
 		if err != nil {
 			log.Print(err)
 		}
-		time.Sleep(2 * time.Second)
 	}()
 	time.Sleep(2 * time.Second)
 	log.Print("Extract dump")
@@ -265,12 +264,12 @@ func main() {
 	if err != nil {
 		Panic("ExtractDump: %v", err)
 	}
-	log.Print("Connect to the database")
+	log.Print("Connect to the MariaDB")
 	db, err := mariaDB.Open("")
 	if err != nil {
 		Panic("connect: %v", err)
 	}
-	log.Print("Ping database")
+	log.Print("Ping MariaDB")
 	if err := db.Ping(); err != nil {
 		Panic("Failed to ping database: %v", err)
 	}
@@ -278,7 +277,7 @@ func main() {
 	if err := maria.CreateDatabase(db); err != nil {
 		Panic("create Database: %v", err)
 	}
-	log.Print("Close database")
+	log.Print("Close database connection")
 	if err := db.Close(); err != nil {
 		Panic("close database: %v", err)
 	}
@@ -286,7 +285,7 @@ func main() {
 	if err = mariaDB.Populate(dumpFile); err != nil {
 		Panic("populate database: %v", err)
 	}
-	log.Printf("Open database %s", maria.DatabaseName)
+	log.Printf("Connect to database %s", maria.DatabaseName)
 	db, err = mariaDB.Open(maria.DatabaseName)
 	if err != nil {
 		Panic("connect to %s: %v", maria.DatabaseName, err)

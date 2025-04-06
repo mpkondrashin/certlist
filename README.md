@@ -25,16 +25,16 @@ Resulting CSV file has following columns:
 
 ## How to use:
 1. Create API Key
-2. Write config file
-3. Run certlist.exe --output &lt;output filename&gt;
+2. Edit config file
+3. Run certlist.exe with appropriate options
 
 ### Create API Key
 1. Open Tipping Point SMS
 2. Go to Admin -> Authentication and Authorization -> Users
-3. Create new user and add it to the superuser group
+3. Create new user and add it to the superuser group, or create special role (see below).
 4. Save API Key
 
-## Minimal permissions
+#### Minimal permissions
 
 Role Capabilities:
 - Admin -> Admin Section -> SMS Management -> Access Management -> Access SMS Web Services
@@ -44,9 +44,9 @@ Role Capabilities:
 Create following minimal configuration file:
 ```yaml
 sms:
-  address: 1.2.3.4
-  api_key: A95BE8AB-AE11-45C5-B813-A9A2FDC27E5B
-  ignore_tls_errors: true
+  address: 1.2.3.4 <- replace with SMS server address
+  api_key: A95BE8AB-AE11-45C5-B813-A9A2FDC27E5B <- replace with generated API Key
+  ignore_tls_errors: false <- change to true if your SMS does not have valid certificate
 ```
 
 ### Run CertList

@@ -51,12 +51,14 @@ sms:
 
 ### Run CertList
 
-Download certlist executable  [releases](https://github.com/mpkondrashin/certlist/releases/latest)
-
-Run following command:
+1. Download CertList distributive from  [releases](https://github.com/mpkondrashin/certlist/releases/latest).
+2. Unpack ZIP archive
+3. Run following command:
 ```commandline
 certlist.exe --output report.csv
 ```
+
+**Note:** No need to unpack mariadb-latest.zip archive.zip.
 
 ## Configuration
 

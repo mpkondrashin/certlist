@@ -116,3 +116,6 @@ If using IPv6 address for SMS, please put it in square brackets.
 
 ### Client SSL Certificates
 The script does not provide any info on usage of the Client SSL Inspection certificates, though the certificates themselves will be listed.
+
+### Running time
+Although the task seem to be trivial, certlist can run over 10 minutes.

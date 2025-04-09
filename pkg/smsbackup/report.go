@@ -46,7 +46,7 @@ type ReportLine struct {
 
 func NewReportLine(id, name, thumbprint string) *ReportLine {
 	return &ReportLine{
-		id:         id,
+		Id:         id,
 		CertName:   name,
 		Thumbprint: thumbprint,
 	}
@@ -76,7 +76,7 @@ func (r *ReportLine) GetX509(certData []byte) error {
 
 func (r *ReportLine) GetIPS(db *sql.DB) error {
 	query := "SELECT DEVICE_SHORT_ID FROM DEVICE_CERTIFICATE WHERE NAMED_CERTIFICATE_ID = ?"
-	rows, err := db.Query(query, r.id)
+	rows, err := db.Query(query, r.Id)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (r *ReportLine) AddDeviceInfo(db *sql.DB, deviceShortID string) error {
 
 func (r *ReportLine) GetSSLServer(db *sql.DB) error {
 	query := "SELECT SSL_SERVER_ID FROM SSL_SERVER_CERTIFICATES WHERE NAMED_CERTIFICATE_ID = ?"
-	rows, err := db.Query(query, r.id)
+	rows, err := db.Query(query, r.Id)
 	if err != nil {
 		return err
 	}

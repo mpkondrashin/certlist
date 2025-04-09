@@ -202,7 +202,11 @@ func main() {
 	log.Println("CertList Started")
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println(r)
+			message := fmt.Sprintf("%v %v", time.Now(), r)
+			err := os.WriteFile("error.txt", []byte(message), 0664)
+			if err != nil {
+				log.Println(r)
+			}
 		}
 		log.Println("Exiting")
 	}()

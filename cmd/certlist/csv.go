@@ -15,7 +15,7 @@ func getHeaders[T any]() []string {
 	typ := reflect.TypeOf(t)
 	headers := make([]string, typ.NumField())
 
-	for i := 0; i < typ.NumField(); i++ {
+	for i := range typ.NumField() {
 		headers[i] = typ.Field(i).Name
 	}
 
@@ -28,7 +28,7 @@ func structToSlice(v any) []string {
 	fields := val.NumField()
 	row := make([]string, fields)
 
-	for i := 0; i < fields; i++ {
+	for i := range fields {
 		row[i] = fmt.Sprintf("%v", val.Field(i).Interface()) // Convert to string
 	}
 

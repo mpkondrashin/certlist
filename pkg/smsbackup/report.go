@@ -27,7 +27,7 @@ import (
 */
 
 type ReportLine struct {
-	id                 string
+	Id                 string
 	CertName           string
 	SubjectName        string
 	IssuerName         string

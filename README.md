@@ -106,7 +106,7 @@ CERTALERT_SMS_API_KEY=A95BE8AB-AE11-45C5-B813-A9A2FDC27E5B
 ## Known Issues
 
 ### On Windows - %TEMP% and certlist.exe on same drive!
-On Windows, system TEMP folder should be on same drive and certlist.exe program (actually as current folder). If it is not so, "temp" parameter of configuration can be used, e.g. "temp: D:\TEMP" in config.yaml or TMP environment variable can be set.
+On Windows, system TEMP folder should be on same drive and certlist.exe program (actually as current folder). If it is not so, "temp" parameter of configuration can be used, e.g. "temp: D:\TEMP" in config.yaml or TEMP/TMP environment variable can be set.
 
 ### Bidirectional connectivity
 Bidirectional connectivity must be provided from host running CertList to SMS and back (see System Requirements).

@@ -61,7 +61,6 @@ func (r *ReportLine) GetX509(certData []byte) error {
 	if err != nil {
 		return err
 	}
-
 	r.IssuerName = cert.Issuer.String()
 	r.ExpirationDate = cert.NotAfter.String()
 	r.EffectiveDate = cert.NotBefore.String()
@@ -70,7 +69,6 @@ func (r *ReportLine) GetX509(certData []byte) error {
 	r.SignatureAlgorithm = cert.SignatureAlgorithm.String()
 	r.SubjectName = cert.Subject.String()
 	r.Version = strconv.Itoa(cert.Version)
-
 	return nil
 }
 
@@ -86,7 +84,6 @@ func (r *ReportLine) GetIPS(db *sql.DB) error {
 		if err := rows.Scan(&DeviceShortID); err != nil {
 			return err
 		}
-
 		if err := r.AddDeviceInfo(db, DeviceShortID); err != nil {
 			return err
 		}
@@ -145,8 +142,7 @@ func (r *ReportLine) GetSSLServerForID(db *sql.DB, sslServerID string) error {
 	defer rows.Close()
 	for rows.Next() {
 		var sslServerName string
-		err := rows.Scan(&sslServerName)
-		if err != nil {
+		if err := rows.Scan(&sslServerName); err != nil {
 			return err
 		}
 		r.SSLServerProxies += sslServerName + ","

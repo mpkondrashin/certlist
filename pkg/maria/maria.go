@@ -125,14 +125,6 @@ func (db *DB) Stop() error {
 	return db.cmd.Wait()
 }
 
-/*
-	func (db *DB) Socket() string {
-		if runtime.GOOS == "windows" {
-			return "npipe://" + Pipe
-		}
-		return filepath.Join(db.tempFolder, SocketName)
-	}
-*/
 func (db *DB) Open(databasename string) (*sql.DB, error) {
 	dsn := fmt.Sprintf("root:@tcp(127.0.0.1:%s)/%s", Port, databasename)
 	return sql.Open("mysql", dsn)

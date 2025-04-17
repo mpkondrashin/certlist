@@ -6,6 +6,7 @@
 ## Report Format
 
 Resulting CSV file has following columns:
+- Id - internal ID of this certificate
 -	CertName - certificate name as it was provided in SMS console
 -	SubjectName - certificate X.500 subject
 -	IssuerName - certificate X.500 issuer

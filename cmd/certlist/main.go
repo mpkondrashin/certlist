@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/mpkondrashin/certlist/pkg/maria"
+	"github.com/mpkondrashin/certlist/pkg/prompt"
 
 	"github.com/mpkondrashin/certalert/pkg/secureftp"
 	"github.com/mpkondrashin/certalert/pkg/sms"
@@ -94,6 +95,7 @@ func Configure() {
 			log.Fatal(err)
 		}
 	}
+	prompt.Mandatory(fs, flagOutput, flagSMSAddress, flagSMSAPIKey)
 	if viper.GetString(flagOutput) == "" {
 		Panic("missing %s", flagOutput)
 	}
@@ -281,7 +283,7 @@ func main() {
 	if err := maria.CreateDatabase(db); err != nil {
 		Panic("create Database: %v", err)
 	}
-	log.Print("Close database connection")
+	log.Print("Close MariaDB connection")
 	if err := db.Close(); err != nil {
 		Panic("close database: %v", err)
 	}

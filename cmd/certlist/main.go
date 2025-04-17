@@ -95,7 +95,10 @@ func Configure() {
 			log.Fatal(err)
 		}
 	}
-	prompt.Mandatory(fs, flagOutput, flagSMSAddress, flagSMSAPIKey)
+	err = prompt.Mandatory(fs, flagOutput, flagSMSAddress, flagSMSAPIKey)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if viper.GetString(flagOutput) == "" {
 		Panic("missing %s", flagOutput)
 	}

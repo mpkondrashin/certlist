@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 func Mandatory(fs *pflag.FlagSet, mandatory ...string) (err error) {
@@ -12,13 +13,16 @@ func Mandatory(fs *pflag.FlagSet, mandatory ...string) (err error) {
 		if err != nil {
 			return
 		}
-		if f.Value.String() != "" {
+		if viper.GetString(f.Name) != "" {
 			return
 		}
 		if !slices.Contains(mandatory, f.Name) {
 			return
 		}
-		fmt.Printf("%s [%s]: ", f.Usage, f.Name)
+		_, err = fmt.Printf("%s [%s]: ", f.Usage, f.Name)
+		if err != nil {
+			return
+		}
 		var v string
 		_, err = fmt.Scanf("%s", &v)
 		if err != nil {

@@ -1,4 +1,4 @@
 sms:
-  address: <sms address>
-  api_key: <sms API key>
+  address: 1.2.34.4
+  api_key:
   ignore_tls_errors: true

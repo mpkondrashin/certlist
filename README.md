@@ -120,3 +120,7 @@ The script does not provide any info on usage of the Client SSL Inspection certi
 
 ### Running time
 Although the task seem to be trivial, certlist can run over 10 minutes.
+
+### Multiply TPS boxes
+If the same certificate is used more than on one TPS box, the CSV
+report will contain information only on one of them.

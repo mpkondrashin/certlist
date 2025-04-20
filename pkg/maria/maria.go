@@ -45,6 +45,13 @@ func (db *DB) MariaFolder() string {
 }
 
 func (db *DB) Extract() error {
+	if runtime.GOOS == "darwin" {
+		db.mariadbExe = "/opt/homebrew/bin/mariadb"
+		db.mariadbdExe = "/opt/homebrew/bin/mariadbd"
+		db.mariadbInstallDbExe = "/opt/homebrew/bin/mariadb-install-db"
+		return nil
+	}
+
 	if err := os.MkdirAll(db.MariaFolder(), 0755); err != nil {
 		return fmt.Errorf("failed to create folder for maria: %w", err)
 	}
@@ -74,11 +81,6 @@ func (db *DB) Extract() error {
 		return fmt.Errorf("failed to find mariadb-install-db.exe in the zip file")
 	}
 	db.mariadbInstallDbExe = paths[2]
-	if runtime.GOOS == "darwin" {
-		db.mariadbExe = "/opt/homebrew/bin/mariadb"
-		db.mariadbdExe = "/opt/homebrew/bin/mariadbd"
-		db.mariadbInstallDbExe = "/opt/homebrew/bin/mariadb-install-db"
-	}
 	return nil
 }
 
@@ -132,13 +134,13 @@ func (db *DB) Open(databasename string) (*sql.DB, error) {
 
 var ErrPopulate = errors.New("failed to populate MariaDB")
 
-func (db *DB) Populate(dumpFile string) error {
+func (db *DB) Populate(dumpFile string, databaseName string) error {
 	command := []string{
 		"-u=root",
 		"--skip-password",
 		"--host=127.0.0.1",
 		"--port=" + Port,
-		DatabaseName,
+		databaseName,
 	}
 	//log.Println(db.mariadbExe, strings.Join(command, " "))
 	c := exec.Command(db.mariadbExe, command...)

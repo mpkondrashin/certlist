@@ -95,19 +95,26 @@ func Configure() {
 			log.Fatal(err)
 		}
 	}
-	err = prompt.Mandatory(fs, flagOutput, flagSMSAddress, flagSMSAPIKey)
+	mandatory := []string{
+		flagOutput,
+	}
+	if viper.GetString(flagBackup) == "" {
+		mandatory = append(mandatory, flagSMSAddress, flagSMSAPIKey)
+	}
+	err = prompt.Mandatory(fs, mandatory...)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if viper.GetString(flagOutput) == "" {
-		Panic("missing %s", flagOutput)
-	}
-	if viper.GetString(flagSMSAddress) == "" {
-		Panic("missing %s", flagSMSAddress)
-	}
-	if viper.GetString(flagSMSAPIKey) == "" {
-		Panic("missing %s", flagSMSAPIKey)
-	}
+	/*
+		if viper.GetString(flagOutput) == "" {
+			Panic("missing %s", flagOutput)
+		}
+		if viper.GetString(flagSMSAddress) == "" {
+			Panic("missing %s", flagSMSAddress)
+		}
+		if viper.GetString(flagSMSAPIKey) == "" {
+			Panic("missing %s", flagSMSAPIKey)
+		}*/
 }
 
 func GetSMS() *sms.SMS {
@@ -291,7 +298,7 @@ func main() {
 		Panic("close database: %v", err)
 	}
 	log.Print("Populate database")
-	if err = mariaDB.Populate(dumpFile); err != nil {
+	if err = mariaDB.Populate(dumpFile, maria.DatabaseName); err != nil {
 		Panic("populate database: %v", err)
 	}
 	log.Printf("Connect to database %s", maria.DatabaseName)
@@ -300,7 +307,7 @@ func main() {
 		Panic("connect to %s: %v", maria.DatabaseName, err)
 	}
 	log.Print("Generate report")
-	report, err := smsbackup.GenerateReport(db)
+	report, err := smsbackup.GenerateReport_(db)
 	if err != nil {
 		Panic("GenerateReport: %v", err)
 	}

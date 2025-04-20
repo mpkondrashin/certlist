@@ -1,8 +1,11 @@
 package prompt
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"slices"
+	"strings"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -19,16 +22,19 @@ func Mandatory(fs *pflag.FlagSet, mandatory ...string) (err error) {
 		if !slices.Contains(mandatory, f.Name) {
 			return
 		}
-		_, err = fmt.Printf("%s [%s]: ", f.Usage, f.Name)
-		if err != nil {
-			return
+		for {
+			_, err = fmt.Printf("%s [%s]: ", f.Usage, f.Name)
+			if err != nil {
+				return
+			}
+			reader := bufio.NewReader(os.Stdin)
+			v, _ := reader.ReadString('\n')
+			v = strings.TrimSpace(v)
+			if v != "" {
+				err = f.Value.Set(v)
+				break
+			}
 		}
-		var v string
-		_, err = fmt.Scanf("%s", &v)
-		if err != nil {
-			return
-		}
-		err = f.Value.Set(v)
 	})
 	return
 }

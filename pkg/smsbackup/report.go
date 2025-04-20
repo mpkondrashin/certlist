@@ -45,14 +45,15 @@ type ReportLine struct {
 	Tos                string
 }
 
-func NewReportLine(id, name, thumbprint string) *ReportLine {
-	return &ReportLine{
-		Id:         id,
-		CertName:   name,
-		Thumbprint: thumbprint,
+/*
+	func NewReportLine(id, name, thumbprint string) *ReportLine {
+		return &ReportLine{
+			Id:         id,
+			CertName:   name,
+			Thumbprint: thumbprint,
+		}
 	}
-}
-
+*/
 func (r *ReportLine) GetX509(certData []byte) error {
 	block, _ := pem.Decode(certData)
 	if block == nil {

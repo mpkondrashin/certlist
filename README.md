@@ -67,6 +67,7 @@ CertList provides following ways to provide options:
 1. Configuration file config.yaml. Application seeks for this file in its current folder or folder of CertList executable
 2. Environment variables
 3. Command line parameters
+4. CLI input
 
 Full config.yaml file explained:
 ```yaml
@@ -94,6 +95,8 @@ To set these parameters through environment variable, add CERTLIST_ prefix and p
 ```commandline
 CERTALERT_SMS_API_KEY=A95BE8AB-AE11-45C5-B813-A9A2FDC27E5B
 ```
+
+If one of the mandatory parameters of the CertList is missing, it will prompt for the value.
 
 ## System Requirements
 

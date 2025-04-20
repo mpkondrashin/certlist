@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/pem"
 	"fmt"
+	"log"
 	"strconv"
 )
 
@@ -27,7 +28,7 @@ import (
 */
 
 type ReportLine struct {
-	//	Id                 string
+	//Id                 string
 	CertName           string
 	SubjectName        string
 	IssuerName         string
@@ -44,7 +45,6 @@ type ReportLine struct {
 	Tos                string
 }
 
-/*
 func NewReportLine(id, name, thumbprint string) *ReportLine {
 	return &ReportLine{
 		Id:         id,
@@ -52,7 +52,6 @@ func NewReportLine(id, name, thumbprint string) *ReportLine {
 		Thumbprint: thumbprint,
 	}
 }
-*/
 
 func (r *ReportLine) GetX509(certData []byte) error {
 	block, _ := pem.Decode(certData)
@@ -92,12 +91,12 @@ func getKeySize(cert *x509.Certificate) int {
 func GenerateReport_(db *sql.DB) (report []ReportLine, err error) {
 	query := `SELECT NAMED_CERTIFICATE.NAME,NAMED_CERTIFICATE.THUMBPRINT,NAMED_CERTIFICATE.CERT_BYTES,
 GROUP_CONCAT(SSL_SERVER.NAME SEPARATOR ',') AS SSL_SERVER_PROXIES,
-TPT_DEVICE.DISPLAY_NAME,TPT_DEVICE.IP_ADDRESS,TPT_DEVICE.SOFTWARE_VERSION
+COALESCE(TPT_DEVICE.DISPLAY_NAME,''),COALESCE(TPT_DEVICE.IP_ADDRESS,''),COALESCE(TPT_DEVICE.SOFTWARE_VERSION,'')
 FROM NAMED_CERTIFICATE
-JOIN DEVICE_CERTIFICATE ON NAMED_CERTIFICATE.ID = DEVICE_CERTIFICATE.NAMED_CERTIFICATE_ID
-JOIN TPT_DEVICE ON DEVICE_CERTIFICATE.DEVICE_SHORT_ID = TPT_DEVICE.SHORT_ID
-JOIN SSL_SERVER_CERTIFICATES ON NAMED_CERTIFICATE.ID = SSL_SERVER_CERTIFICATES.NAMED_CERTIFICATE_ID
-JOIN SSL_SERVER ON SSL_SERVER_CERTIFICATES.SSL_SERVER_ID = SSL_SERVER.SSL_SERVER_ID
+LEFT JOIN DEVICE_CERTIFICATE ON NAMED_CERTIFICATE.ID = DEVICE_CERTIFICATE.NAMED_CERTIFICATE_ID
+LEFT JOIN TPT_DEVICE ON DEVICE_CERTIFICATE.DEVICE_SHORT_ID = TPT_DEVICE.SHORT_ID
+LEFT JOIN SSL_SERVER_CERTIFICATES ON NAMED_CERTIFICATE.ID = SSL_SERVER_CERTIFICATES.NAMED_CERTIFICATE_ID
+LEFT JOIN SSL_SERVER ON SSL_SERVER_CERTIFICATES.SSL_SERVER_ID = SSL_SERVER.SSL_SERVER_ID
 WHERE NAMED_CERTIFICATE.PRIVATE_KEY_EXPECTED=1
 GROUP BY NAMED_CERTIFICATE.ID,NAMED_CERTIFICATE.NAME,NAMED_CERTIFICATE.THUMBPRINT,NAMED_CERTIFICATE.CERT_BYTES;`
 	rows, err := db.Query(query)
@@ -106,16 +105,19 @@ GROUP BY NAMED_CERTIFICATE.ID,NAMED_CERTIFICATE.NAME,NAMED_CERTIFICATE.THUMBPRIN
 	}
 	defer rows.Close()
 	for rows.Next() {
+		//log.Println("rows.Next()", rows)
 		var reportLine ReportLine
 		var certCertBytes string
 		//&reportLine.Id,
-		err := rows.Scan(&reportLine.CertName, &reportLine.Thumbprint, &certCertBytes, reportLine.SSLServerProxies, &reportLine.IpsName, &reportLine.ManagmentIP, &reportLine.Tos)
+		err := rows.Scan(&reportLine.CertName, &reportLine.Thumbprint, &certCertBytes, &reportLine.SSLServerProxies, &reportLine.IpsName, &reportLine.ManagmentIP, &reportLine.Tos)
+		//log.Println("rows.Scan()", reportLine.CertName, reportLine.Thumbprint, certCertBytes, reportLine.SSLServerProxies, reportLine.IpsName, reportLine.ManagmentIP, reportLine.Tos)
 		if err != nil {
 			return nil, err
 		}
 		if err := reportLine.GetX509([]byte(certCertBytes)); err != nil {
 			return nil, err
 		}
+		log.Printf("CertName: %s", reportLine.CertName)
 		report = append(report, reportLine)
 	}
 	if err := rows.Err(); err != nil {
@@ -125,120 +127,118 @@ GROUP BY NAMED_CERTIFICATE.ID,NAMED_CERTIFICATE.NAME,NAMED_CERTIFICATE.THUMBPRIN
 }
 
 /*
-	func (r *ReportLine) GetIPS(db *sql.DB) error {
-		query := "SELECT DEVICE_SHORT_ID FROM DEVICE_CERTIFICATE WHERE NAMED_CERTIFICATE_ID = ?"
-		rows, err := db.Query(query, r.Id)
+func (r *ReportLine) GetIPS(db *sql.DB) error {
+	query := "SELECT DEVICE_SHORT_ID FROM DEVICE_CERTIFICATE WHERE NAMED_CERTIFICATE_ID = ?"
+	rows, err := db.Query(query, r.Id)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var DeviceShortID string
+		if err := rows.Scan(&DeviceShortID); err != nil {
+			return err
+		}
+		if err := r.AddDeviceInfo(db, DeviceShortID); err != nil {
+			return err
+		}
+	}
+	return rows.Err()
+}
+
+func (r *ReportLine) AddDeviceInfo(db *sql.DB, deviceShortID string) error {
+	query := "SELECT DISPLAY_NAME,SOFTWARE_VERSION,IP_ADDRESS FROM TPT_DEVICE WHERE SHORT_ID = ?"
+	rows, err := db.Query(query, deviceShortID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		return rows.Scan(&r.IpsName, &r.Tos, &r.ManagmentIP)
+	}
+	return rows.Err()
+	//_ = device.DeviceMode.String
+	//_ = device.Location.String
+}
+
+func (r *ReportLine) GetSSLServer(db *sql.DB) error {
+	query := "SELECT SSL_SERVER_ID FROM SSL_SERVER_CERTIFICATES WHERE NAMED_CERTIFICATE_ID = ?"
+	rows, err := db.Query(query, r.Id)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var sslServerID string
+		err := rows.Scan(&sslServerID)
 		if err != nil {
 			return err
 		}
-		defer rows.Close()
-		for rows.Next() {
-			var DeviceShortID string
-			if err := rows.Scan(&DeviceShortID); err != nil {
-				return err
-			}
-			if err := r.AddDeviceInfo(db, DeviceShortID); err != nil {
-				return err
-			}
+		if err := r.GetSSLServerForID(db, sslServerID); err != nil {
+			return err
 		}
-		return rows.Err()
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	if len(r.SSLServerProxies) > 0 {
+		r.SSLServerProxies = r.SSLServerProxies[:len(r.SSLServerProxies)-1] // remove last comma
 	}
 
-	func (r *ReportLine) AddDeviceInfo(db *sql.DB, deviceShortID string) error {
-		query := "SELECT DISPLAY_NAME,SOFTWARE_VERSION,IP_ADDRESS FROM TPT_DEVICE WHERE SHORT_ID = ?"
-		rows, err := db.Query(query, deviceShortID)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-		for rows.Next() {
-			return rows.Scan(&r.IpsName, &r.Tos, &r.ManagmentIP)
-		}
-		return rows.Err()
-		//_ = device.DeviceMode.String
-		//_ = device.Location.String
+	return nil
+}
+
+func (r *ReportLine) GetSSLServerForID(db *sql.DB, sslServerID string) error {
+	query := "SELECT NAME FROM SSL_SERVER WHERE SSL_SERVER_ID = ?"
+	rows, err := db.Query(query, sslServerID)
+	if err != nil {
+		return err
 	}
-
-	func (r *ReportLine) GetSSLServer(db *sql.DB) error {
-		query := "SELECT SSL_SERVER_ID FROM SSL_SERVER_CERTIFICATES WHERE NAMED_CERTIFICATE_ID = ?"
-		rows, err := db.Query(query, r.Id)
-		if err != nil {
+	defer rows.Close()
+	for rows.Next() {
+		var sslServerName string
+		if err := rows.Scan(&sslServerName); err != nil {
 			return err
 		}
-		defer rows.Close()
-		for rows.Next() {
-			var sslServerID string
-			err := rows.Scan(&sslServerID)
-			if err != nil {
-				return err
-			}
-			if err := r.GetSSLServerForID(db, sslServerID); err != nil {
-				return err
-			}
-		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		if len(r.SSLServerProxies) > 0 {
-			r.SSLServerProxies = r.SSLServerProxies[:len(r.SSLServerProxies)-1] // remove last comma
-		}
-
-		return nil
+		r.SSLServerProxies += sslServerName + ","
 	}
-
-	func (r *ReportLine) GetSSLServerForID(db *sql.DB, sslServerID string) error {
-		query := "SELECT NAME FROM SSL_SERVER WHERE SSL_SERVER_ID = ?"
-		rows, err := db.Query(query, sslServerID)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-		for rows.Next() {
-			var sslServerName string
-			if err := rows.Scan(&sslServerName); err != nil {
-				return err
-			}
-			r.SSLServerProxies += sslServerName + ","
-		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		return nil
+	if err := rows.Err(); err != nil {
+		return err
 	}
-*/
+	return nil
+}
 
-/*
-	func GenerateReport(db *sql.DB) (report []ReportLine, err error) {
-		query := "SELECT ID,NAME,THUMBPRINT,CERT_BYTES FROM NAMED_CERTIFICATE WHERE PRIVATE_KEY_EXPECTED=1"
-		rows, err := db.Query(query)
+func GenerateReport(db *sql.DB) (report []ReportLine, err error) {
+	query := "SELECT ID,NAME,THUMBPRINT,CERT_BYTES FROM NAMED_CERTIFICATE WHERE PRIVATE_KEY_EXPECTED=1"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var certID, certName, certThumbprint, certCertBytes string
+		err := rows.Scan(&certID, &certName, &certThumbprint, &certCertBytes)
 		if err != nil {
 			return nil, err
 		}
-		defer rows.Close()
-		for rows.Next() {
-			var certID, certName, certThumbprint, certCertBytes string
-			err := rows.Scan(&certID, &certName, &certThumbprint, &certCertBytes)
-			if err != nil {
-				return nil, err
-			}
-			reportLine := NewReportLine(certID, certName, certThumbprint)
+		reportLine := NewReportLine(certID, certName, certThumbprint)
 
-			if err := reportLine.GetX509([]byte(certCertBytes)); err != nil {
-				return nil, err
-			}
-
-			if err := reportLine.GetIPS(db); err != nil {
-				return nil, err
-			}
-
-			if err := reportLine.GetSSLServer(db); err != nil {
-				return nil, err
-			}
-			report = append(report, *reportLine)
-		}
-		if err := rows.Err(); err != nil {
+		if err := reportLine.GetX509([]byte(certCertBytes)); err != nil {
 			return nil, err
 		}
-		return report, nil
+
+		if err := reportLine.GetIPS(db); err != nil {
+			return nil, err
+		}
+
+		if err := reportLine.GetSSLServer(db); err != nil {
+			return nil, err
+		}
+		report = append(report, *reportLine)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return report, nil
+}
 */

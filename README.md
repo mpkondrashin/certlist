@@ -127,3 +127,6 @@ Although the task seem to be trivial, certlist can run over 10 minutes.
 ### Multiply TPS boxes
 If the same certificate is used more than on one TPS box, the CSV
 report will contain information only on one of them.
+
+### Platform support
+Only Windows is supported.

@@ -106,19 +106,17 @@ GROUP BY NAMED_CERTIFICATE.ID,NAMED_CERTIFICATE.NAME,NAMED_CERTIFICATE.THUMBPRIN
 	}
 	defer rows.Close()
 	for rows.Next() {
-		//log.Println("rows.Next()", rows)
 		var reportLine ReportLine
 		var certCertBytes string
 		//&reportLine.Id,
 		err := rows.Scan(&reportLine.CertName, &reportLine.Thumbprint, &certCertBytes, &reportLine.SSLServerProxies, &reportLine.IpsName, &reportLine.ManagmentIP, &reportLine.Tos)
-		//log.Println("rows.Scan()", reportLine.CertName, reportLine.Thumbprint, certCertBytes, reportLine.SSLServerProxies, reportLine.IpsName, reportLine.ManagmentIP, reportLine.Tos)
 		if err != nil {
 			return nil, err
 		}
 		if err := reportLine.GetX509([]byte(certCertBytes)); err != nil {
 			return nil, err
 		}
-		log.Printf("CertName: %s", reportLine.CertName)
+		log.Printf("Certificate name: %s", reportLine.CertName)
 		report = append(report, reportLine)
 	}
 	if err := rows.Err(); err != nil {

@@ -210,7 +210,12 @@ func Unzip(src, dest string, searchFor []string) (paths []string, err error) {
 }
 
 func CreateDatabase(db *sql.DB) error {
-	query := fmt.Sprintf("CREATE DATABASE %s", DatabaseName)
+	query := fmt.Sprintf("DROP DATABASE %s", DatabaseName)
 	_, err := db.Exec(query)
+	if err != nil {
+		return err
+	}
+	query = fmt.Sprintf("CREATE DATABASE %s", DatabaseName)
+	_, err = db.Exec(query)
 	return err
 }

@@ -29,8 +29,10 @@ import (
 
 type ReportLine struct {
 	//Id                 string
-	CertName           string
-	SubjectName        string
+	IpsName            string
+	ManagmentIP        string
+	Tos                string
+	StartPort          string
 	IssuerName         string
 	ExpirationDate     string
 	EffectiveDate      string
@@ -38,11 +40,11 @@ type ReportLine struct {
 	SerialNumber       string
 	Thumbprint         string
 	SignatureAlgorithm string
+	SubjectName        string
 	Version            string
-	SSLServerProxies   string
-	IpsName            string
-	ManagmentIP        string
-	Tos                string
+	// Extra
+	SSLServerProxies string
+	CertName         string
 }
 
 /*
@@ -54,6 +56,7 @@ type ReportLine struct {
 		}
 	}
 */
+
 func (r *ReportLine) GetX509(certData []byte) error {
 	block, _ := pem.Decode(certData)
 	if block == nil {
@@ -88,32 +91,81 @@ func getKeySize(cert *x509.Certificate) int {
 	}
 }
 
+var query = `
+SELECT
+	nc.NAME,
+	nc.THUMBPRINT,
+	nc.CERT_BYTES,
+	GROUP_CONCAT(ss.NAME SEPARATOR ',') AS SSL_SERVER_PROXIES,
+	COALESCE(td.DISPLAY_NAME,''),
+	COALESCE(sslp.START_PORT,''),
+	COALESCE(td.IP_ADDRESS,''),
+	COALESCE(td.SOFTWARE_VERSION,'')
+FROM NAMED_CERTIFICATE nc
+LEFT JOIN DEVICE_CERTIFICATE dc ON nc.ID = dc.NAMED_CERTIFICATE_ID
+LEFT JOIN TPT_DEVICE td ON dc.DEVICE_SHORT_ID = td.SHORT_ID
+LEFT JOIN SSL_SERVER_CERTIFICATES ssc ON nc.ID = ssc.NAMED_CERTIFICATE_ID
+LEFT JOIN SSL_SERVER ss ON ssc.SSL_SERVER_ID = ss.SSL_SERVER_ID
+LEFT JOIN SSL_SERVER_PORT sslp ON ss.SSL_SERVER_ID = sslp.SSL_SERVER_ID
+WHERE nc.PRIVATE_KEY_EXPECTED=1
+GROUP BY ss.NAME;`
+
+//GROUP BY nc.ID,nc.NAME,nc.THUMBPRINT,nc.CERT_BYTES;`
+
 // NAMED_CERTIFICATE.ID,
 func GenerateReport_(db *sql.DB) (report []ReportLine, err error) {
-	query := `SELECT NAMED_CERTIFICATE.NAME,NAMED_CERTIFICATE.THUMBPRINT,NAMED_CERTIFICATE.CERT_BYTES,
-GROUP_CONCAT(SSL_SERVER.NAME SEPARATOR ',') AS SSL_SERVER_PROXIES,
-COALESCE(TPT_DEVICE.DISPLAY_NAME,''),COALESCE(TPT_DEVICE.IP_ADDRESS,''),COALESCE(TPT_DEVICE.SOFTWARE_VERSION,'')
-FROM NAMED_CERTIFICATE
-LEFT JOIN DEVICE_CERTIFICATE ON NAMED_CERTIFICATE.ID = DEVICE_CERTIFICATE.NAMED_CERTIFICATE_ID
-LEFT JOIN TPT_DEVICE ON DEVICE_CERTIFICATE.DEVICE_SHORT_ID = TPT_DEVICE.SHORT_ID
-LEFT JOIN SSL_SERVER_CERTIFICATES ON NAMED_CERTIFICATE.ID = SSL_SERVER_CERTIFICATES.NAMED_CERTIFICATE_ID
-LEFT JOIN SSL_SERVER ON SSL_SERVER_CERTIFICATES.SSL_SERVER_ID = SSL_SERVER.SSL_SERVER_ID
-WHERE NAMED_CERTIFICATE.PRIVATE_KEY_EXPECTED=1
-GROUP BY NAMED_CERTIFICATE.ID,NAMED_CERTIFICATE.NAME,NAMED_CERTIFICATE.THUMBPRINT,NAMED_CERTIFICATE.CERT_BYTES;`
+	/*	query := `
+		SELECT
+		    nc.NAME as cert_name,
+		    nc.THUMBPRINT,
+		    nc.CERT_BYTES,
+		    GROUP_CONCAT(DISTINCT ss.PROXY_NAME) as ssl_server_proxies,
+		    GROUP_CONCAT(DISTINCT td.IPS_NAME) as ips_name,
+		    GROUP_CONCAT(DISTINCT td.MANAGMENT_IP) as managment_ip,
+		    GROUP_CONCAT(DISTINCT td.TOS) as tos
+		FROM NAMED_CERTIFICATE nc
+		LEFT JOIN DEVICE_CERTIFICATE dc ON nc.ID = dc.NAMED_CERTIFICATE_ID
+		LEFT JOIN TPT_DEVICE td ON dc.DEVICE_SHORT_ID = td.SHORT_ID
+		LEFT JOIN SSL_SERVER_CERTIFICATES ssc ON nc.ID = ssc.NAMED_CERTIFICATE_ID
+		LEFT JOIN SSL_SERVER ss ON ssc.SSL_SERVER_ID = ss.SSL_SERVER_ID
+		WHERE nc.PRIVATE_KEY_EXPECTED = 1
+		GROUP BY nc.NAME, nc.THUMBPRINT, nc.CERT_BYTES`*/
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 	for rows.Next() {
 		var reportLine ReportLine
-		var certCertBytes string
 		//&reportLine.Id,
-		err := rows.Scan(&reportLine.CertName, &reportLine.Thumbprint, &certCertBytes, &reportLine.SSLServerProxies, &reportLine.IpsName, &reportLine.ManagmentIP, &reportLine.Tos)
+		var cn, tp, ccb, ssp, in, sp, mip, tos sql.NullString
+		err := rows.Scan(&cn, &tp, &ccb, &ssp, &in, &sp, &mip, &tos)
 		if err != nil {
 			return nil, err
 		}
-		if err := reportLine.GetX509([]byte(certCertBytes)); err != nil {
+		if cn.Valid {
+			reportLine.CertName = cn.String
+		}
+		if tp.Valid {
+			reportLine.Thumbprint = tp.String
+		}
+		if ssp.Valid {
+			reportLine.SSLServerProxies = ssp.String
+		}
+		if in.Valid {
+			reportLine.IpsName = in.String
+		}
+		if sp.Valid {
+			reportLine.StartPort = sp.String
+		}
+		if mip.Valid {
+			reportLine.ManagmentIP = mip.String
+		}
+		if tos.Valid {
+			reportLine.Tos = tos.String
+		}
+		if err := reportLine.GetX509([]byte(ccb.String)); err != nil {
 			return nil, err
 		}
 		log.Printf("Certificate name: %s", reportLine.CertName)

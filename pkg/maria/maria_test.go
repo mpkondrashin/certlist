@@ -23,7 +23,7 @@ func TestMaria(t *testing.T) {
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		t.Fatal(err)
 	}
-	mariaDistib := "../../cmd/certlist/mariadb-11.7.2-winx64.zip"
+	mariaDistib := "../../cmd/mdownload/mariadb-latest.zip"
 	mariaDB := NewDB(mariaDistib, tempDir)
 	t.Log("Extract database")
 	if err := mariaDB.Extract(); err != nil {
@@ -63,7 +63,7 @@ func TestMaria(t *testing.T) {
 	}
 	t.Logf("Populate database")
 	dumpFile := "noalerts.mysqldump"
-	if err := mariaDB.Populate(dumpFile); err != nil {
+	if err := mariaDB.Populate(dumpFile, DatabaseName); err != nil {
 		t.Fatalf("Populate database: %v", err)
 	}
 	for tpt, err := range model.RangeTptDevice(db, "") {

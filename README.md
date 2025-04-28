@@ -6,9 +6,10 @@
 ## Report Format
 
 Resulting CSV file has following columns:
-<!-- - Id - internal ID of this certificate -->
--	CertName - certificate name as it was provided in SMS console
--	SubjectName - certificate X.500 subject
+-	IpsName - name of Tipping Point IPS using this certificate
+-	ManagmentIP - Tipping Point IPS management IP address
+-	Tos - Tipping Point IPS TOS version
+-	StartPort - Start Port (usually 443)
 -	IssuerName - certificate X.500 issuer
 -	ExpirationDate - date after which the certificate is no longer valid
 -	EffectiveDate - date before which the certificate is not yet valid    
@@ -16,11 +17,25 @@ Resulting CSV file has following columns:
 -	SerialNumber - serial number of the certificate 
 -	Thumbprint - certificate thumbprint
 -	SignatureAlgorithm - used cryptographic algorithm (for example SHA-256)
+-	SubjectName - certificate X.500 subject
 -	Version - used certificate version 
 -	SSLServerProxies - name of the SSL server proxies names configured in SMS and using this certificate   
--	IpsName - name of Tipping Point IPS using this certificate
--	ManagmentIP - Tipping Point IPS management IP address
--	Tos - Tipping Point IPS TOS version
+-	CertName - certificate name as it was provided in SMS console
+
+If ```--strict``` protion provided list of the parameters will be the following:
+- [ServerName] IPS
+- [IP] IPS Management Address
+- [OS] OS Version
+- [Port] 443
+- [IssuerName] from the certificate
+- [ExpirationDate] from the certificate
+- [EffectiveDate] from the certificate
+- [KeySize0] key size from the certificate
+- [SerialNumber] the certificate
+- [Thumbprint] - HASH from the certificate
+- [SignatureAlgorithm] algorithm of the signature - from the certificate
+- [SubjectName] Subject of the certificate
+- [Version] of the certificate (appers to be 3)
 
 **Note:** if same certificate used in mode than one Server SSL Profile/IPS, then they all will be listed in CSV file separated by comma.
 
@@ -73,6 +88,7 @@ Full config.yaml file explained:
 ```yaml
 temp: # use this folder for temporary files instead of %TEMP%
 output: # output filename
+strict: # true/false - CSV format
 sms:
   address: # IP address or DNS name
   api_key: # SMS API Key

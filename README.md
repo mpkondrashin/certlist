@@ -130,3 +130,6 @@ report will contain information only on one of them.
 
 ### Platform support
 Only Windows is supported.
+
+### Local firewall
+Local firewall may affect ability of Certlist to operate. It is recommended to turn it off.

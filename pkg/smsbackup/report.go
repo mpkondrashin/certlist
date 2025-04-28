@@ -29,19 +29,19 @@ import (
 
 type ReportLine struct {
 	//Id                 string
-	IpsName            string
-	ManagmentIP        string
-	Tos                string
-	StartPort          string
-	IssuerName         string
-	ExpirationDate     string
-	EffectiveDate      string
-	KeySize0           string
-	SerialNumber       string
-	Thumbprint         string
-	SignatureAlgorithm string
-	SubjectName        string
-	Version            string
+	IpsName            string `csv:"[ServerName]"`
+	ManagmentIP        string `csv:"[IP]"`
+	Tos                string `csv:"[OS]"`
+	StartPort          string `csv:"[Port]"`
+	IssuerName         string `csv:"[IssuerName]"`
+	ExpirationDate     string `csv:"[ExpirationDate]"`
+	EffectiveDate      string `csv:"[EffectiveDate]"`
+	KeySize0           string `csv:"[KeySize0]"`
+	SerialNumber       string `csv:"[SerialNumber]"`
+	Thumbprint         string `csv:"[Thumbprint]"`
+	SignatureAlgorithm string `csv:"[SignatureAlgorithm]"`
+	SubjectName        string `csv:"[SubjectName]"`
+	Version            string `csv:"[Version]"`
 	// Extra
 	SSLServerProxies string
 	CertName         string

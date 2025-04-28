@@ -40,6 +40,7 @@ const (
 const (
 	flagTempDir = "temp"
 	flagOutput  = "output"
+	flagStrict  = "strict"
 
 	flagSMSAddress         = "sms.address"
 	flagSMSAPIKey          = "sms.api_key"
@@ -58,6 +59,7 @@ func Configure() {
 
 	fs.String(flagTempDir, "", "Folder for temporary files")
 	fs.String(flagOutput, "", "Output filename")
+	fs.Bool(flagStrict, false, "Generate strict version of report")
 
 	fs.String(flagSMSAddress, "", "Tipping Point SMS address")
 	fs.String(flagSMSAPIKey, "", "Tipping Point SMS API Key")
@@ -312,7 +314,8 @@ func main() {
 		Panic("GenerateReport: %v", err)
 	}
 	log.Print("Write report")
-	if err := SaveCSV(viper.GetString(flagOutput), report); err != nil {
+	strict := viper.GetBool(flagStrict)
+	if err := SaveCSV(viper.GetString(flagOutput), report, strict); err != nil {
 		Panic("SaveCSV: %v", err)
 	}
 	if !viper.GetBool(flagNoCleanup) {

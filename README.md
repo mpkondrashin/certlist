@@ -2,7 +2,7 @@
 # CertList — Get List of All TLS Certificates Used For Server SSL Inspection 
 
 <p align="center">
-  <img src="media/certlist.png" width="600"/>
+  <img src="media/certlist.jpeg" width="600"/>
 </p>
 
 **CertList generates CSV file with all server TLS inspection certificates with info on which IPS boxes they are used**

@@ -315,6 +315,13 @@ func main() {
 	if err := SaveCSV(viper.GetString(flagOutput), report); err != nil {
 		Panic("SaveCSV: %v", err)
 	}
+	if !viper.GetBool(flagNoCleanup) {
+		log.Print("Delete database")
+		err = maria.DropDatabase(db)
+		if err != nil {
+			log.Print(err)
+		}
+	}
 	log.Printf("Report saved to %s", viper.GetString(flagOutput))
 }
 

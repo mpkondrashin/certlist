@@ -13,20 +13,19 @@ import (
 func getHeaders[T any](useTags bool) []string {
 	var t T
 	typ := reflect.TypeOf(t)
-	headers := make([]string, typ.NumField())
+	var headers []string
 
 	for i := range typ.NumField() {
 		if !useTags {
-			headers[i] = typ.Field(i).Name
+			headers = append(headers, typ.Field(i).Name)
 			continue
 		}
 		header := typ.Field(i).Tag.Get("csv")
 		if header == "" {
 			continue
 		}
-		headers[i] = header
+		headers = append(headers, header)
 	}
-
 	return headers
 }
 

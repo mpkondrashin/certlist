@@ -67,8 +67,8 @@ func (r *ReportLine) GetX509(certData []byte) error {
 		return err
 	}
 	r.IssuerName = cert.Issuer.String()
-	r.ExpirationDate = cert.NotAfter.String()
-	r.EffectiveDate = cert.NotBefore.String()
+	r.ExpirationDate = cert.NotAfter.Format("2006-01-02 15:04:05")
+	r.EffectiveDate = cert.NotBefore.Format("2006-01-02 15:04:05")
 	r.KeySize0 = strconv.Itoa(getKeySize(cert))
 	r.SerialNumber = cert.SerialNumber.String()
 	r.SignatureAlgorithm = cert.SignatureAlgorithm.String()

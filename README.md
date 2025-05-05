@@ -75,7 +75,7 @@ sms:
 2. Unpack ZIP archive
 3. Run following command:
 ```commandline
-certlist.exe --output report.csv
+certlist.exe --output.filename report.csv
 ```
 
 **Note:** No need to unpack mariadb-latest.zip archive.zip.
@@ -91,8 +91,11 @@ CertList provides following ways to provide options:
 Full config.yaml file explained:
 ```yaml
 temp: # use this folder for temporary files instead of %TEMP%
-output: # output filename
-strict: # true/false - CSV format
+output:
+  filename: # output filename
+  strict: # true/false - another CSV format
+  semicolon: # true/false - use semicolon instead of comma as separator
+  no_tz: # true/false - do not include timezone in dates
 sms:
   address: # IP address or DNS name
   api_key: # SMS API Key

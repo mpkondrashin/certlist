@@ -31,7 +31,7 @@ const (
 	OutputFilename  = "output.filename"
 	OutputStrict    = "output.strict"
 	OutputSemicolon = "output.semicolon"
-	OutputNoTZ      = "output.notz"
+	OutputNoTZ      = "output.no_tz"
 
 	SMSAddress         = "sms.address"
 	SMSAPIKey          = "sms.api_key"

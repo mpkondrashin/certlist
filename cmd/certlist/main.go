@@ -12,124 +12,23 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-
-	"github.com/mpkondrashin/certlist/pkg/maria"
-	"github.com/mpkondrashin/certlist/pkg/prompt"
 
 	"github.com/mpkondrashin/certalert/pkg/secureftp"
 	"github.com/mpkondrashin/certalert/pkg/sms"
+	"github.com/mpkondrashin/certlist/pkg/config"
+	"github.com/mpkondrashin/certlist/pkg/maria"
 	"github.com/mpkondrashin/certlist/pkg/smsbackup"
 )
 
-const (
-	DefaultUsernameLength = 16
-	DefaultPasswordLength = 16
-)
-
-const (
-	EnvPrefix = "CERTLIST"
-)
-
-const (
-	ConfigFileName = "config"
-	ConfigFileType = "yaml"
-)
-
-const (
-	flagTempDir = "temp"
-
-	flagOutputFilename  = "output.filename"
-	flagOutputStrict    = "output.strict"
-	flagOutputSemicolon = "output.semicolon"
-
-	flagSMSAddress         = "sms.address"
-	flagSMSAPIKey          = "sms.api_key"
-	flagSMSIgnoreTLSErrors = "sms.ignore_tls_errors"
-
-	flagSFTPUsernameLength = "sftp.username_length"
-	flagSFTPPasswordLength = "sftp.password_length"
-
-	flagMariaDB   = "debug.mariadb"
-	flagBackup    = "debug.backup"
-	flagNoCleanup = "debug.nocleanup"
-)
-
-func Configure() {
-	fs := pflag.NewFlagSet("", pflag.ExitOnError)
-
-	fs.String(flagTempDir, "", "Folder for temporary files")
-	fs.String(flagOutputFilename, "", "Output filename")
-	fs.Bool(flagOutputStrict, false, "Generate strict version of report")
-	fs.Bool(flagOutputSemicolon, false, "Use semicolon instead of comma as separator")
-
-	fs.String(flagSMSAddress, "", "Tipping Point SMS address")
-	fs.String(flagSMSAPIKey, "", "Tipping Point SMS API Key")
-	fs.Bool(flagSMSIgnoreTLSErrors, false, "Ignore SMS TLS errors")
-
-	fs.Int(flagSFTPUsernameLength, DefaultUsernameLength, "sFTP username length")
-	fs.Int(flagSFTPPasswordLength, DefaultPasswordLength, "sFTP password length")
-
-	fs.String(flagMariaDB, maria.MariaDBZip, "MariaDB ZIP file")
-	fs.String(flagBackup, "", "SMS Backup File")
-	fs.Bool(flagNoCleanup, false, "Keep temporary folder")
-
-	err := fs.Parse(os.Args[1:])
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := viper.BindPFlags(fs); err != nil {
-		log.Fatal(err)
-	}
-	viper.SetEnvPrefix(EnvPrefix)
-	viper.AutomaticEnv()
-
-	viper.SetConfigName(ConfigFileName)
-	viper.SetConfigType(ConfigFileType)
-	path, err := os.Executable()
-	if err == nil {
-		dir := filepath.Dir(path)
-		viper.AddConfigPath(dir)
-	}
-	viper.AddConfigPath(".")
-
-	if err := viper.ReadInConfig(); err != nil {
-		_, ok := err.(viper.ConfigFileNotFoundError)
-		if !ok {
-			log.Fatal(err)
-		}
-	}
-	mandatory := []string{
-		flagOutputFilename,
-	}
-	if viper.GetString(flagBackup) == "" {
-		mandatory = append(mandatory, flagSMSAddress, flagSMSAPIKey)
-	}
-	err = prompt.Mandatory(fs, mandatory...)
-	if err != nil {
-		log.Fatal(err)
-	}
-	/*
-		if viper.GetString(flagOutput) == "" {
-			Panic("missing %s", flagOutput)
-		}
-		if viper.GetString(flagSMSAddress) == "" {
-			Panic("missing %s", flagSMSAddress)
-		}
-		if viper.GetString(flagSMSAPIKey) == "" {
-			Panic("missing %s", flagSMSAPIKey)
-		}*/
-}
-
 func GetSMS() *sms.SMS {
-	auth := sms.NewAPIKeyAuthorization(viper.GetString(flagSMSAPIKey))
-	smsClient := sms.New("https://"+viper.GetString(flagSMSAddress), auth)
-	return smsClient.SetInsecureSkipVerify(viper.GetBool(flagSMSIgnoreTLSErrors))
+	auth := sms.NewAPIKeyAuthorization(viper.GetString(config.SMSAPIKey))
+	smsClient := sms.New("https://"+viper.GetString(config.SMSAddress), auth)
+	return smsClient.SetInsecureSkipVerify(viper.GetBool(config.SMSIgnoreTLSErrors))
 }
 
 func GetLocalAddress() string {
-	smsAddress := viper.GetString(flagSMSAddress)
+	smsAddress := viper.GetString(config.SMSAddress)
 	log.Printf("Dial SMS (%s)", smsAddress)
 	localIP, err := GetOutboundIP(smsAddress + ":443")
 	if err != nil {
@@ -195,10 +94,10 @@ func RandStringBytesRmndr(n int) string {
 }
 
 func GetTempDir() string {
-	tempDir := viper.GetString(flagTempDir)
+	tempDir := viper.GetString(config.TempDir)
 	if tempDir == "" {
 		var err error
-		tempDir, err = os.MkdirTemp(viper.GetString(flagTempDir), "cl-*")
+		tempDir, err = os.MkdirTemp(viper.GetString(config.TempDir), "cl-*")
 		if err != nil {
 			Panic("TempDir: %v", err)
 		}
@@ -227,9 +126,9 @@ func main() {
 		}
 		log.Println("Exiting")
 	}()
-	Configure()
+	config.Configure()
 	tempDir := GetTempDir()
-	if !viper.GetBool(flagNoCleanup) {
+	if !viper.GetBool(config.NoCleanup) {
 		defer func() {
 			log.Printf("Remove temporary folder %s", tempDir)
 			err := os.RemoveAll(tempDir)
@@ -240,14 +139,14 @@ func main() {
 	}
 	backupName := GetBackupFileName()
 	backupPath := filepath.Join(tempDir, backupName)
-	if viper.GetString(flagBackup) != "" {
-		backupPath = viper.GetString(flagBackup)
+	if viper.GetString(config.Backup) != "" {
+		backupPath = viper.GetString(config.Backup)
 	} else {
 		localIP := GetLocalAddress()
 		log.Printf("Run local sFTP server")
 		port := 22
-		username := RandStringBytesRmndr(viper.GetInt(flagSFTPUsernameLength))
-		password := RandStringBytesRmndr(viper.GetInt(flagSFTPPasswordLength))
+		username := RandStringBytesRmndr(viper.GetInt(config.SFTPUsernameLength))
+		password := RandStringBytesRmndr(viper.GetInt(config.SFTPPasswordLength))
 		go secureftp.Run(username, password, localIP, port)
 		smsClient := GetSMS()
 		log.Printf("Run backup")
@@ -258,7 +157,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	mariaDistib := filepath.Join(filepath.Dir(exePath), viper.GetString(flagMariaDB))
+	mariaDistib := filepath.Join(filepath.Dir(exePath), viper.GetString(config.MariaDB))
 	mariaDB := maria.NewDB(mariaDistib, tempDir)
 	log.Print("Extract MariaDB")
 	if err := mariaDB.Extract(); err != nil {
@@ -317,19 +216,19 @@ func main() {
 		Panic("GenerateReport: %v", err)
 	}
 	log.Print("Write report")
-	strict := viper.GetBool(flagOutputStrict)
-	semicolon := viper.GetBool(flagOutputSemicolon)
-	if err := SaveCSV(viper.GetString(flagOutputFilename), report, strict, semicolon); err != nil {
+	strict := viper.GetBool(config.OutputStrict)
+	semicolon := viper.GetBool(config.OutputSemicolon)
+	if err := SaveCSV(viper.GetString(config.OutputFilename), report, strict, semicolon); err != nil {
 		Panic("SaveCSV: %v", err)
 	}
-	if !viper.GetBool(flagNoCleanup) {
+	if !viper.GetBool(config.NoCleanup) {
 		log.Print("Delete database")
 		err = maria.DropDatabase(db)
 		if err != nil {
 			log.Print(err)
 		}
 	}
-	log.Printf("Report saved to %s", viper.GetString(flagOutputFilename))
+	log.Printf("Report saved to %s", viper.GetString(config.OutputFilename))
 }
 
 func Panic(format string, v ...any) {

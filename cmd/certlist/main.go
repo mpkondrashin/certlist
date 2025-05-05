@@ -39,8 +39,10 @@ const (
 
 const (
 	flagTempDir = "temp"
-	flagOutput  = "output"
-	flagStrict  = "strict"
+
+	flagOutputFilename  = "output.filename"
+	flagOutputStrict    = "output.strict"
+	flagOutputSemicolon = "output.semicolon"
 
 	flagSMSAddress         = "sms.address"
 	flagSMSAPIKey          = "sms.api_key"
@@ -58,8 +60,9 @@ func Configure() {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 
 	fs.String(flagTempDir, "", "Folder for temporary files")
-	fs.String(flagOutput, "", "Output filename")
-	fs.Bool(flagStrict, false, "Generate strict version of report")
+	fs.String(flagOutputFilename, "", "Output filename")
+	fs.Bool(flagOutputStrict, false, "Generate strict version of report")
+	fs.Bool(flagOutputSemicolon, false, "Use semicolon instead of comma as separator")
 
 	fs.String(flagSMSAddress, "", "Tipping Point SMS address")
 	fs.String(flagSMSAPIKey, "", "Tipping Point SMS API Key")
@@ -98,7 +101,7 @@ func Configure() {
 		}
 	}
 	mandatory := []string{
-		flagOutput,
+		flagOutputFilename,
 	}
 	if viper.GetString(flagBackup) == "" {
 		mandatory = append(mandatory, flagSMSAddress, flagSMSAPIKey)
@@ -314,8 +317,9 @@ func main() {
 		Panic("GenerateReport: %v", err)
 	}
 	log.Print("Write report")
-	strict := viper.GetBool(flagStrict)
-	if err := SaveCSV(viper.GetString(flagOutput), report, strict); err != nil {
+	strict := viper.GetBool(flagOutputStrict)
+	semicolon := viper.GetBool(flagOutputSemicolon)
+	if err := SaveCSV(viper.GetString(flagOutputFilename), report, strict, semicolon); err != nil {
 		Panic("SaveCSV: %v", err)
 	}
 	if !viper.GetBool(flagNoCleanup) {
@@ -325,7 +329,7 @@ func main() {
 			log.Print(err)
 		}
 	}
-	log.Printf("Report saved to %s", viper.GetString(flagOutput))
+	log.Printf("Report saved to %s", viper.GetString(flagOutputFilename))
 }
 
 func Panic(format string, v ...any) {

@@ -45,7 +45,7 @@ func structToSlice(v any, useTags bool) []string {
 	return row
 }
 
-func SaveCSV(filename string, data []smsbackup.ReportLine, useTags bool) error {
+func SaveCSV(filename string, data []smsbackup.ReportLine, useTags bool, semicolon bool) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -53,6 +53,9 @@ func SaveCSV(filename string, data []smsbackup.ReportLine, useTags bool) error {
 	defer file.Close()
 
 	writer := csv.NewWriter(file)
+	if semicolon {
+		writer.Comma = ';'
+	}
 	defer writer.Flush()
 
 	headers := getHeaders[smsbackup.ReportLine](useTags)

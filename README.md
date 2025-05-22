@@ -130,6 +130,10 @@ If one of the mandatory parameters of the CertList is missing, it will prompt fo
   - Opened port 443 to the direction of the SMS
   - Opened port 22 to the direction of the CertList
 
+## Troubleshooting
+
+Certlist generates error.txt file in the same folder as the executable if it fails at some curcumstance. 
+
 ## Known Issues
 
 ### On Windows - %TEMP% and certlist.exe on same drive!

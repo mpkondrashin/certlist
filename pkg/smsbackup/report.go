@@ -71,8 +71,8 @@ func (r *ReportLine) GetX509(certData []byte) error {
 	}
 	r.IssuerName = cert.Issuer.String()
 	if viper.GetBool(config.OutputNoTZ) {
-		r.ExpirationDate = cert.NotAfter.Format("2006-01-02 15:04:05")
-		r.EffectiveDate = cert.NotBefore.Format("2006-01-02 15:04:05")
+		r.ExpirationDate = cert.NotAfter.Format("2006-01-02 15:04:05.000")
+		r.EffectiveDate = cert.NotBefore.Format("2006-01-02 15:04:05.000")
 	} else {
 		r.ExpirationDate = cert.NotAfter.String()
 		r.EffectiveDate = cert.NotBefore.String()
